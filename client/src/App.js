@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Header from './components/Header';
 import HomePage from './pages/HomePage';
@@ -19,24 +19,31 @@ import { useSelector } from 'react-redux';
 import { Navigate } from 'react-router-dom';
 import Db from './pages/db/db';
 // const { token } = useSelector((state) => state.user);
-
+let logval = true;
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('tokeni'); // Check for token in localStorage
-
+  alert(token)
   if (!token) {
     return <Navigate to="/login" />;
   }
-
+  logval = true;
+  alert(logval)
   return children;
 };
 
 const App = () => {
+  useEffect(() => {
+
+
+    alert('asdf');
+  }, []);
+
   return (
 
     <Provider store={store}> {/* Wrap your app with Provider */}
       <Router>
-        <Header />
-        <Navbar isLoggedIn={false} />
+        {/* <Header /> */}
+        <Navbar isLoggedIn={logval} />
         <Routes>
           <Route path="/home" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
 
@@ -54,7 +61,7 @@ const App = () => {
         </Routes>
       </Router>
     </Provider>
- 
+
   );
 };
 

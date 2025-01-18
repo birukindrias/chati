@@ -24,12 +24,11 @@ app.use(bodyParser.json());
 app.use(express.json());
 
 // Sync database
-const sequelize = require('./db');
 // const Post = require('./models/Post');
 
-sequelize.sync({ force: false }) // Set to `true` only for development (drops and recreates tables)
-    .then(() => console.log('Database synced'))
-    .catch(err => console.error('Error syncing database:', err));
+// sequelize.sync({ force: false }) // Set to `true` only for development (drops and recreates tables)
+//     .then(() => console.log('Database synced'))
+//     .catch(err => console.error('Error syncing database:', err));
 
 
 

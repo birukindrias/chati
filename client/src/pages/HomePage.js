@@ -10,19 +10,19 @@ const Home = () => {
     const [error, setError] = useState('');
     const userId = 1; // Replace with actual logged-in user's ID
     const navigate = useNavigate();
-
+    const fetchPosts = async () => {
+        try {
+            const response = await axios.get('http://localhost:5000/api/posts');
+            setPosts(response.data);
+            console.log(response.data);
+            alert(response.data)
+            
+        } catch (error) {
+            setError('Failed to fetch posts');
+        }
+    };
     useEffect(() => {
-        const fetchPosts = async () => {
-            try {
-                const response = await axios.get('http://localhost:5000/api/posts');
-                setPosts(response.data);
-                console.log(response.data);
-                alert(response.data)
-                
-            } catch (error) {
-                setError('Failed to fetch posts');
-            }
-        };
+   
 
         fetchPosts();
     }, []);
@@ -72,7 +72,7 @@ alert(token)
         try {
             const response = await axios.post(
                 'http://localhost:5000/api/posts',
-                { 'title':'newPost','body':'newPost',user_id:44 },
+                { 'title':'newPost','body':newPost,user_id:44 },
                 {
                     headers: {
                         Authorization: `Bearer ${token}`, // Send the token in the Authorization header
@@ -80,6 +80,8 @@ alert(token)
                 }
             );
             console.log('Post created successfully:', response.data);
+        fetchPosts();
+
         } catch (error) {
             console.error('Error creating post:', error.response?.data?.error || error.message);
         }

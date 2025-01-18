@@ -28,6 +28,7 @@ const ProfilePage = () => {
       )}
       <h2>Posts</h2>
       {posts.map(post => (
+        
         <div key={post._id}>
           <p>{post.content}</p>
         </div>
