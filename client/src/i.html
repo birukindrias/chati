@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PostgreSQL Visualizer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+        }
+
+        #app {
+            max-width: 800px;
+            margin: 20px auto;
+            background: #252526;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .tree {
+            list-style: none;
+            padding-left: 20px;
+        }
+
+        .tree-item {
+            cursor: pointer;
+            margin: 5px 0;
+            padding: 5px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .tree-item:hover {
+            background-color: #333333;
+        }
+
+        .tree-item .toggle {
+            margin-right: 8px;
+        }
+
+        .tree-item .toggle::before {
+            content: "▶";
+            display: inline-block;
+            width: 12px;
+        }
+
+        .tree-item.expanded .toggle::before {
+            content: "▼";
+        }
+
+        .tree-children {
+            display: none;
+            padding-left: 20px;
+        }
+
+        .tree-item.expanded .tree-children {
+            display: block;
+        }
+
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+
+        #table-view {
+            margin-top: 20px;
+            background: #1e1e1e;
+            padding: 10px;
+            border: 1px solid #444;
+            border-radius: 8px;
+        }
+
+        #table-view h3 {
+            margin: 0 0 10px;
+            font-size: 18px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        table th,
+        table td {
+            padding: 8px;
+            border: 1px solid #444;
+            text-align: left;
+        }
+
+        table th {
+            background-color: #333;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <h2>PostgreSQL Visualizer</h2>
+        <div id="connection-form">
+            <label for="host">Host:</label>
+            <input type="text" id="host" placeholder="localhost">
+            <label for="user">User:</label>
+            <input type="text" id="user" placeholder="postgres">
+            <label for="password">Password:</label>
+            <input type="password" id="password">
+            <button id="connect-btn">Connect</button>
+        </div>
+        <ul id="tree" class="tree"></ul>
+        <div id="table-view"></div>
+        <div id="error" class="error"></div>
+    </div>
+
+    <script>
+        document.getElementById("connect-btn").addEventListener("click", async () => {
+            const host = document.getElementById("host").value;
+            const user = document.getElementById("user").value;
+            const password = document.getElementById("password").value;
+
+            try {
+                const response = await fetch("http://localhost:5000/connecti", {
+                    method: "GET",
+                    headers: { "Content-Type": "application/json" },
+                });
+
+                if (!response.ok) throw new Error("Failed to connect to the server.");
+
+                const data = await response.json();
+                renderTree(data);
+                document.getElementById("error").textContent = "";
+            } catch (error) {
+                document.getElementById("error").textContent = error.message;
+            }
+        });
+
+        function renderTree(data) {
+            const tree = document.getElementById("tree");
+            tree.innerHTML = ""; // Clear previous content
+
+            Object.entries(data).forEach(([dbName, schemas]) => {
+                const dbItem = createTreeItem(dbName, () => {
+                    const children = renderSchemas(schemas);
+                    dbItem.appendChild(children);
+                });
+                tree.appendChild(dbItem);
+            });
+        }
+
+        function renderSchemas(schemas) {
+            const schemaList = document.createElement("ul");
+            schemaList.classList.add("tree-children");
+
+            Object.entries(schemas).forEach(([schemaName, tables]) => {
+                const schemaItem = createTreeItem(schemaName, () => {
+                    const children = renderTables(tables);
+                    schemaItem.appendChild(children);
+                });
+                schemaList.appendChild(schemaItem);
+            });
+
+            return schemaList;
+        }
+
+        function renderTables(tables) {
+            const tableList = document.createElement("ul");
+            tableList.classList.add("tree-children");
+
+            Object.entries(tables).forEach(([tableName, columns]) => {
+                const tableItem = createTreeItem(tableName, async () => {
+                    const data = await fetchTableData(tableName);
+                    renderTableView(tableName, data);
+                });
+                tableList.appendChild(tableItem);
+            });
+
+            return tableList;
+        }
+
+        async function fetchTableData(tableName) {
+            const host = document.getElementById("host").value;
+            const user = document.getElementById("user").value;
+            const password = document.getElementById("password").value;
+
+            const response = await fetch("http://localhost:5000/table-data", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ host, user, password, tableName }),
+            });
+
+            if (!response.ok) throw new Error("Failed to fetch table data.");
+            return await response.json();
+        }
+
+        async function renderTableView(tableName) {
+            const tableView = document.getElementById("table-view");
+            tableView.innerHTML = `<h3>Table: ${tableName}</h3>`;
+
+            const host = document.getElementById("host").value;
+            const user = document.getElementById("user").value;
+            const password = document.getElementById("password").value;
+
+            try {
+                // Fetch both column information and table data
+                const response = await fetch("http://localhost:5000/table-data", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ host, user, password, tableName }),
+                });
+
+                if (!response.ok) throw new Error("Failed to fetch table data.");
+                const { columns, rows } = await response.json();
+
+                const table = document.createElement("table");
+                const thead = document.createElement("thead");
+                const tbody = document.createElement("tbody");
+
+                // Create header row from column names
+                const headerRow = document.createElement("tr");
+                columns.forEach((column) => {
+                    const th = document.createElement("th");
+                    th.textContent = column;
+                    headerRow.appendChild(th);
+                });
+                thead.appendChild(headerRow);
+
+                // Populate rows with data (if any)
+                rows.forEach((row) => {
+                    const rowElement = document.createElement("tr");
+                    columns.forEach((column) => {
+                        const td = document.createElement("td");
+                        td.textContent = row[column] || ""; // Display empty string if no data
+                        rowElement.appendChild(td);
+                    });
+                    tbody.appendChild(rowElement);
+                });
+
+                table.appendChild(thead);
+                table.appendChild(tbody);
+                tableView.appendChild(table);
+
+                if (rows.length === 0) {
+                    tableView.innerHTML += "<p>No data available in this table.</p>";
+                }
+            } catch (error) {
+                tableView.innerHTML = `<p>Error: ${error.message}</p>`;
+            }
+        }
+
+        function createTreeItem(label, onExpand) {
+            const item = document.createElement("li");
+            item.classList.add("tree-item");
+
+            const toggle = document.createElement("span");
+            toggle.classList.add("toggle");
+            toggle.addEventListener("click", () => {
+                if (item.classList.contains("expanded")) {
+                    item.classList.remove("expanded");
+                } else {
+                    item.classList.add("expanded");
+                    if (!item.querySelector(".tree-children")) {
+                        onExpand();
+                    }
+                }
+            });
+
+            const labelText = document.createElement("span");
+            labelText.textContent = label;
+
+            item.appendChild(toggle);
+            item.appendChild(labelText);
+
+            return item;
+        }
+    </script>
+</body>
+
+</html>
