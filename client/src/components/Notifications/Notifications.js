@@ -15,8 +15,8 @@ const Navbar = ({ isLoggedIn }) => {
                         <li><Link to="/profile">Profile</Link></li>
                         <li><Link to="/posts">Posts</Link></li>
                         <li><Link to="/notifications">Notifications</Link></li>
-                        <li><button className="logout-button">Logout</button></li>
-                    </>
+                         <li><Link to="/logout">Logout</Link></li>
+                            </>
                 ) : (
                     <>
                         <li><Link to="/login">Login</Link></li>

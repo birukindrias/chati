@@ -2,6 +2,8 @@ import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Header from './components/Header';
 import HomePage from './pages/HomePage';
+
+import HomeGust from './pages/HomeGust';
 import ProfilePage from './pages/ProfilePage';
 import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
@@ -51,7 +53,7 @@ const App = () => {
           <Route path="/posts" element={<Posts />} />
           <Route path="/db" element={<Db />} />
 
-          <Route path="/" element={<HomePage />} />
+          <Route path="/" element={<HomeGust />} />
           <Route path="/profile/:userId" element={<ProfilePage />} />
           <Route path="/" element={<Feed />} />
           <Route path="/login" element={<Login />} />

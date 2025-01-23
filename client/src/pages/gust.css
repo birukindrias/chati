@@ -1,0 +1,71 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.home {
+  font-family: Arial, sans-serif;
+}
+
+.home-header {
+  padding: 50px 20px;
+  color: white;
+  text-align: center;
+}
+
+.home-header h1 {
+  font-size: 3rem;
+}
+
+.home-header p {
+  font-size: 1.2rem;
+}
+
+.home-buttons .btn {
+  margin: 10px;
+}
+.flex-row {
+  display: flex;
+  flex-direction: row;
+}
+.hero-section {
+  background-image: url("https://images.unsplash.com/photo-1522202176988-66273c2fd55f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwzNjUyOXwwfDF8c2VhcmNofDF8fHRlYW13b3JrfGVufDB8fHx8MTYyNjM0OTYxOQ&ixlib=rb-1.2.1&q=80&w=400");
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: white;
+}
+
+.hero-content h2 {
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+}
+
+.hero-content p {
+  font-size: 1.2rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.home-footer {
+  background-color: #282c34;
+  color: white;
+  text-align: center;
+  padding: 20px;
+}
+
+.footer-links a {
+  color: white;
+  margin: 0 10px;
+  text-decoration: none;
+}
+
+.footer-links a:hover {
+  text-decoration: underline;
+}
